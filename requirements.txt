@@ -1,0 +1,8 @@
+pandas
+numpy
+sklearn
+lightBGM
+XGBoost
+pytorch
+MLflow
+Fastapi

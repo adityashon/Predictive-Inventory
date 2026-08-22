@@ -1,0 +1,177 @@
+
+
+
+
+
+
+    _____FOR AUTHORIZATION____
+
+
+Authenticating with the Amazon Selling Partner API (SP-API)
+URL:- https://developer.amazonservices.com/start/getting-started-for-public-developers
+
+Requires exchanging your Login with Amazon (LWA) credentials and a refresh token to generate a short-lived access token.
+
+
+
+---The Authentication Request
+
+        To get an active access token, send an HTTP POST request to the LWA token endpoint:
+        URL: https://api.amazon.com/auth/o2/token
+
+        Content-Type: `application/x-www-form-urlencoded`
+
+---Required Body Parameters
+        grant_type: Set this value to refresh_token.
+        refresh_token: Your long-lived token string (usually starts with Atzr|) obtained from Seller Central or the Solution Provider Portal after app authorization.
+
+        client_id: Your LWA application's Client ID (Client Identifier).
+
+        client_secret: Your LWA application's Client Secret.
+
+        What the Request ReturnsA successful POST request returns a JSON response containing your temporary access token and metadata:
+
+        json{
+          "access_token": "Atc|eyJ...[long alphanumeric string]",
+          "refresh_token": "Atzr|eyJ...[long string, returned in some flows]",
+          "token_type": "bearer",
+          "expires_in": 3600
+        }
+---Response Field Breakdown
+
+        access_token: The temporary credential string you must include in the Authorization: Bearer <access_token> header for all subsequent SP-API calls.
+
+        token_type: Always returns as bearer.expires_in: The lifetime of the access token in seconds. It is valid for only 1 hour (3600 seconds).
+
+        refresh_token: Re-issued or confirmed long-lived token (store this securely if newly rotated or generated).
+
+
+
+-------------------------------------------------------------------------------------------------
+
+    ___FOR CLIENT _____
+
+
+
+Technical Reference Guide: Amazon SP-API Client (client.py)
+
+This documentation provides clean, direct instructions on how the AmazonSPAPIClient manages connections, handles credentials, and interacts with Amazon's Selling Partner API.
+
+
+---Core Components📦 
+
+        AmazonClientConfig
+
+        A immutable data container housing core targeting credentials.
+
+        endpoint: The regional marketplace base URL (e.g., https://amazon.com).
+
+        region: The AWS Region designator (e.g., us-east-1).
+
+        user_agent: A mandatory tracking string identifying your application to Amazon.
+
+
+---⚙️ AmazonSPAPIClient 
+
+
+        The main controller class that manages the HTTP session, headers, and token refreshes.
+
+        ---Key Operational Workflows
+
+         1. 🔐Proactive Token Refresh
+
+         Instead of waiting for an HTTP 401 Unauthorized error, the client checks the token's lifetime using a high-resolution timer (time.monotonic()) before every call.
+         +++The token refresh formula used in the client+++
+                ||self._token_expires_at = current_time + expires_in - TOKEN_REFRESH_BUFFER_SECONDS||
+
+        The Buffer: Set to 60 seconds.
+        The Logic: If a token is expiring within one minute, the client automatically requests a fresh token using AmazonAuth before dispatching the pending request.
+
+         2.🔄Rate-Limit Resilience (HTTP 429)
+
+        Amazon heavily throttles SP-API requests. The client intercepts 429 Too Many Requests responses and handles them natively inside a retry loop limited to 5 attempts.
+            Step A: Look for Amazon's explicit Retry-After header value.
+            Step B: If the header is missing, fall back to an exponential backoff formula (backoff *= 2).Step C: Pause execution with time.sleep() and re-attempt the request seamlessly.
+
+         3.🛠️Request Header Injection
+         
+        Developers do not need to manually configure payloads. For every outbound API request, the client automatically attaches the following required structure to the HTTP headers:
+
+                ||x-amz-access-token = [Dynamically fetched Atc| Access Token]
+                ||User-Agent         = [Your configured app user agent string]
+                ||Content-Type       = application/json
+---API Reference & Input/Output Mapping
+
+        _get_ : Returns a parsed JSON data dictionary from Amazon.Failure: Raises AmazonAPIError.
+
+        _post_ : Returns action confirmation/resource tracking JSON.Failure: Raises AmazonAPIError.
+
+        _request__: helps to futher run process of _get_ and _post_
+
+        _response_handler : ecodes valid 2xx text payloads into native dictionaries or processes errors.
+
+
+---------------------------------------------------------------------------------------------------
+
+
+    _____FOR ORDERS_____
+
+
+for orders parametres :
+ ---- https://python-amazon-sp-api.readthedocs.io/en/v1.0.4/endpoints/orders.html
+
+
+The Amazon Selling Partner API (SP-API) getOrders operation is located on the Orders API v0 Reference path at 
+~~~~   GET /orders/v0/orders.Accepted Query Parameters
++---------------------+-------------------+----------+-------------------------------------------------------------+
+
+| Parameter Name      | Data Type         | Required | Description                                                 |
++---------------------+-------------------+----------+-------------------------------------------------------------+
+
+| MarketplaceIds      | Array of Strings  | Yes      | List of marketplace identifiers (e.g., ATVPDKIKX0DER)       |
+| CreatedAfter        | String (ISO 8601) | No       | Returns orders created after this date                      |
+| CreatedBefore       | String (ISO 8601) | No       | Returns orders created before this date                     |
+| LastUpdatedAfter    | String (ISO 8601) | No       | Returns orders modified after this date                     |
+| LastUpdatedBefore   | String (ISO 8601) | No       | Returns orders modified before this date                    |
+| OrderStatuses       | Array of Strings  | No       | Filter by status (e.g., Unshipped, Shipped, Canceled)       |
+| FulfillmentChannels | Array of Strings  | No       | Filter by AFN (FBA) or MFN (FBM)                            |
+| PaymentMethods      | Array of Strings  | No       | Filter by payment method (e.g., COD, CVS, Other)            |
+| BuyerEmail          | String            | No       | Filter by buyer email address                               |
+| SellerOrderId       | String            | No       | Filter by custom seller order ID                            |
+| MaxResultsPerPage   | Integer           | No       | Maximum number of orders to return per page                 |
+| NextToken           | String            | No       | Token for pagination; overrides other filter parameters     |
++---------------------+-------------------+----------+-------------------------------------------------------------+
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+        _____FOR REPORT_____
+
+1)Create report 
+                it is essential to create report 
+                URL:- https://developer-docs.amazon/sp-api/docs/request-a-report#createreport-response-example
+                this url contains the parameters that amazon API accepts,
+                using self.client._post_() to give the required information and get a a report_id in exchange
+
+
+2)get reports
+        parametes that needs to fulfill the requiresments
+        URL:-https://python-amazon-sp-api.readthedocs.io/en/latest/endpoints/reports.html
+
+                        
+                        
+                        
+-------------------------------------------------------------------------------------------------------------------------------
+        _____FOR INVENTORY_____
+
+1)getInventorySummaries
+                URL:-https://developer-docs.amazon/sp-api/reference/getinventorysummaries
+
+                for its parameters :-https://python-amazon-sp-api.readthedocs.io/en/latest/endpoints/inventories.html
+                        
+                        
+-------------------------------------------------------------------------------------------------------------------------------
+                        
+                        
+                        
+                        
+                        
