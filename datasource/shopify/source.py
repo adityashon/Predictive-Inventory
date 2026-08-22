@@ -30,7 +30,7 @@ class ShopifyDataSource:
                 yield self._records_for_orders(order)
             page_info = order_page["pageInfo"]
             if not page_info['hasNextPage']:
-                break
+                break;
             cursor = page_info['endCursor']
 
 
