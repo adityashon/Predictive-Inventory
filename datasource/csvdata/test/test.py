@@ -1,5 +1,5 @@
 from datasource.csvdata.ingestion.csv_source import CsvDataSource
-from datasource.csvdata.ingestion.models import RejectedRecords
+from model.models import RejectedRecords
 from datasource.csvdata.ingestion.validator import (
     BusinessValidationError,
     validate_sales_record,
