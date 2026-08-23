@@ -54,7 +54,7 @@ class AmazonOrdersAPI:
             params['NextToken'] = next_token
 
         return self.client._get_('GET',path=self.ORDERS_PATH,params=params)
-
+# iter_orders
     def get_all_orders(
         self,
         marketplace_ids: list[str],
@@ -111,11 +111,12 @@ class AmazonOrderItemsAPI:
             params['NextToken'] = next_token
 
         return self.client._get_('GET',path=path,params=params)
-    
+# iter_items
     def get_items(
             self,
             order_id:str
             )->Iterator[dict[str,Any]]:
+        
         next_token:str|None = None
 
         while True:
