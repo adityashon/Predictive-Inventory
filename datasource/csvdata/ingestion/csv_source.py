@@ -5,7 +5,7 @@ from pathlib import Path
 from collections.abc import Iterator
 from pydantic import ValidationError
 from datasource.csvdata.ingestion.exceptions import FileIngestionError, SchemaError
-from model.models import AcceptedRecord , RejectedRecords
+from datasource.model.models import AcceptedRecord , RejectedRecords
 
 
 

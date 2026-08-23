@@ -3,7 +3,7 @@ from typing import Any
 from collections.abc import Iterator
 from decimal import Decimal
 from datetime import datetime
-from model.models import AcceptedRecord
+from datasource.model.models import AcceptedRecord
 from datasource.amazon.components.orders import AmazonOrderItemsAPI , AmazonOrdersAPI
 from datasource.amazon.components.inventory import AmazonInventoryAPI
 from datasource.amazon.components.reports import AmazonReportsAPI
