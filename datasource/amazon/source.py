@@ -95,6 +95,8 @@ class AmazonDataSource:
             )
 
 
+    def _fetch_inventory(self):pass
+    def _fetch_reports(self):pass
 
          
 
