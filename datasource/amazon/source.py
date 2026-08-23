@@ -57,7 +57,7 @@ class AmazonSource:
             )
 
 
-# ORDER ITEMS
+# order items
 
 
     def _fetch_order_items(
@@ -77,7 +77,7 @@ class AmazonSource:
             if record is not None:
                 yield record
 
-# NORMALIZATION
+# normalisation
     
 
     @staticmethod
