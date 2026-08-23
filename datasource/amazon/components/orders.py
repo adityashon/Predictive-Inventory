@@ -57,6 +57,7 @@ class AmazonOrdersAPI:
 # iter_orders
     def get_all_orders(
         self,
+        *,
         marketplace_ids: list[str],
         created_after: str | None = None,
         created_before: str | None = None,
@@ -90,6 +91,7 @@ class AmazonOrderItemsAPI:
 
     def __init__(
             self,
+            *,
             client:AmazonSPAPIClient):
         self.client = client
         self.ORDERS_PATH_ITEM = '/orders/v0/orders/{order_id}/orderItems'
