@@ -120,3 +120,12 @@ class AmazonSource:
             unit_price=Decimal(str(unit_price_value)),
             currency=item_currency,
         )
+
+# fetcher for inventory
+    def _fetch_invetory(self):pass
+
+    
+# fetcher for reports
+
+
+    def _fetch_reports(self):pass
