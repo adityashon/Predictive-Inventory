@@ -54,6 +54,8 @@ class AmazonDataSource:
                      order_date=order_date,
                      currency = currency
                 )
+
+
     def _fetch_order_items(
             self,
             order_id:str,
@@ -70,6 +72,8 @@ class AmazonDataSource:
                     )
                 if record is not None:
                      yield record
+
+
     def _normalize_order_item(
         self,
         order_id:str,
@@ -124,13 +128,17 @@ class AmazonDataSource:
     def _normalize_inventory(self,granularityId:str,granularityType:str,item:dict[str,Any])->InventoryRecord|None:
         sku = item.get('sellerSku')
         if not sku :return None
+
         quantity_data = item.get('inventoryDetails',) or {}
         quantity_on_hand = quantity_data.get('fulfillableQuantity')
         if quantity_on_hand is None:return None
+
         reserved_data = (quantity_data.get('reservedQuantity') or {})
         quantity_reserved = reserved_data.get('totalReservedQuantity',0)
+        
         quantity_inbound  = quantity_data.get('inboundReceivingQuantity',0)
         if  quantity_inbound is None:return None
+
         last_updated = item.get('lastUpdatedTime')
         snapshot_datetime = datetime.fromisoformat(last_updated.replace('Z',"+00:00"))
 
