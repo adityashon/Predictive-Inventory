@@ -6,6 +6,8 @@ from datetime import datetime
 from decimal import Decimal
 from dataclasses import dataclass
 from typing import Optional
+
+
 class AcceptedRecord(BaseModel):
     ''' a structure to verify the data that will ingest  '''
 
@@ -44,6 +46,18 @@ class RejectedRecords:
  number_row:int 
  reason:str
  raw_data:dict[str,str|None]
+
+class InventoryRecord(BaseModel):
+    sku: str
+    location_id: str | None = None
+
+    quantity_on_hand: int
+    quantity_reserved: int = 0
+    quantity_inbound: int = 0
+
+    snapshot_datetime: datetime
+
+    source: Optional[str]
     
     
         
