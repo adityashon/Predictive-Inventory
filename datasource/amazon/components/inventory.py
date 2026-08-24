@@ -32,9 +32,12 @@ class AmazonInventoryAPI:
                 raise ValueError(
                      'granularityId is required'
                 )
+            if not marketplaceIds:
+                raise ValueError("at least one marketplace ID is required")
             params :dict[str,Any]={
                 'granularityId':granularityId,
                 'granularityType':granularityType,
+                'marketplaceIds':','.join(marketplaceIds),
                 'details':details
 
             }
@@ -48,6 +51,45 @@ class AmazonInventoryAPI:
             if nextToken is not None:
                  params['nextToken'] = nextToken
             return self.client._get_(path=self.IN_SUM_PATH,params=params)
+
+    def iter_inventory_summaries(
+        self,
+        *,
+        granularityType:str,
+        granularityId:str,
+        details:bool = True,
+        sellerSkus:list[str]|None=None,
+        startDateTime:str|None=None,
+        marketplaceIds:list[str]|None=None,
+    ):
+         next_token:str|None = None
+
+         while True:
+            response = self.get_inventory_summaries(
+                granularityId=granularityId,
+                granularityType=granularityType,
+                details=details,
+                sellerSkus=sellerSkus,
+                startDateTime=startDateTime,
+                marketplaceIds=marketplaceIds,
+                nextToken=next_token
+            )
+
+            payload  = response.get('payload',{})
+            summaries = payload.get('inventorySummaries',[])
+
+            for summary in summaries:
+                 yield summary
+            next_token = payload.get('nextToken')
+            if not next_token:
+                 break;
+
+
+
+
+
+
+
     
 
         
