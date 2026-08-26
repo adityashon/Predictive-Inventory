@@ -7,7 +7,7 @@ from decimal import Decimal
 from dataclasses import dataclass
 from typing import Optional
 
-
+# for Accepted sales/Records
 class AcceptedRecord(BaseModel):
     ''' a structure to verify the data that will ingest  '''
 
@@ -47,6 +47,8 @@ class RejectedRecords:
  reason:str
  raw_data:dict[str,str|None]
 
+
+# For  accepted Inventory 
 class InventoryRecord(BaseModel):
     sku: str
     location_id: str | None = None
@@ -60,8 +62,7 @@ class InventoryRecord(BaseModel):
     source: Optional[str]
 
 
-
-
+# for Reports(will be use soo.n)
 class ReportJob(BaseModel):
     report_id: str = Field(min_length=1)
     report_type: str = Field(min_length=1)
