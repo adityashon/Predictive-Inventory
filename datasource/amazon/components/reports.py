@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Any
 from datasource.amazon.client import AmazonSPAPIClient
-
+from collections.abc import Iterator
 
 '''
 createreport,
@@ -61,6 +61,7 @@ class AmazonReportsAPI:
             createdUntil:str|None = None,
             nextToken:str|None=None
         )->dict[str,Any]:
+                
                 if not reportTypes:
                     raise ValueError(
                         'Report type is required'
@@ -91,15 +92,45 @@ class AmazonReportsAPI:
                 if nextToken is not None:
                      params['nextToken'] = nextToken
 
-
+# amazon will return a report_id
                 return self.client._get_(path=self.REPORT_PATH,params=params)
-    
+
+    def iter_reports(
+        self,
+        reportTypes:list[str],
+        marketplaceIds:list[str],
+        processingStatuses:list[str]|None=None,
+        pageSize :int|None = None,
+        createdSince:str|None = None,
+        createdUntil:str|None = None,
+    )->Iterator[dict[str,Any]]:
+
+        next_token:str|None = None
+        while True:
+            response = self.get_reports(
+                reportTypes=reportTypes,
+                marketplaceIds=marketplaceIds,
+                processingStatuses=processingStatuses,
+                pageSize=pageSize,
+                createdSince=createdSince,
+                createdUntil=createdUntil,
+                nextToken=next_token
+                )
+            payload = response.get('payload',{})
+            reports = payload.get('reports',[])
+            for report in reports:
+                 if report is not None:
+                      yield report
+            next_token = payload.get('nextToken')
+            if not next_token:
+                 break
+
 
     def get_report(self,report_id:str)->dict[str,Any]:
 
             if not report_id:
                 raise ValueError(
-                   'order id is reuqired'
+                   'report id  is reuqired'
                 )
             path = f'{self.REPORT_PATH}/{report_id}'
             params :dict[str,Any]={
@@ -108,7 +139,7 @@ class AmazonReportsAPI:
 
             return self.client._get_(path=path,params=params)
 
-    def get_report_document(self,document_id:str)->dict[str,any]:
+    def get_report_document(self,document_id:str)->dict[str,Any]:
 
         if not document_id:
               raise ValueError(

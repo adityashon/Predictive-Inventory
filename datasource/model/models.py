@@ -58,6 +58,18 @@ class InventoryRecord(BaseModel):
     snapshot_datetime: datetime
 
     source: Optional[str]
+
+
+
+
+class ReportJob(BaseModel):
+    report_id: str = Field(min_length=1)
+    report_type: str = Field(min_length=1)
+    processing_status: str = Field(min_length=1)
+    report_document_id: Optional[str] = None
+    created_time: datetime
+    data_start_time: Optional[datetime] = None
+    data_end_time: Optional[datetime] = None
     
     
         
