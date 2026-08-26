@@ -22,11 +22,13 @@ for understanding
 
 class AmazonDataSource:
 
-    def __init__(self,orders:AmazonOrdersAPI,order_item:AmazonOrderItemsAPI,inventory:AmazonInventoryAPI):
+    def __init__(self,orders:AmazonOrdersAPI,order_item:AmazonOrderItemsAPI,inventory:AmazonInventoryAPI,reports:AmazonReportsAPI):
         self.order_api = orders
         self.order_item_api = order_item
         # for inventory
         self.inventory_api = inventory
+        # for reports
+        self.reports_api = reports
 
     def _fetch_sales(
         self,
@@ -125,40 +127,81 @@ class AmazonDataSource:
                      yield record
 
 
-    def _normalize_inventory(self,granularityId:str,granularityType:str,item:dict[str,Any])->InventoryRecord|None:
-        sku = item.get('sellerSku')
-        if not sku :return None
-
-        quantity_data = item.get('inventoryDetails',) or {}
-        quantity_on_hand = quantity_data.get('fulfillableQuantity')
-        if quantity_on_hand is None:return None
-
-        reserved_data = (quantity_data.get('reservedQuantity') or {})
-        quantity_reserved = reserved_data.get('totalReservedQuantity',0)
-        
-        quantity_inbound  = quantity_data.get('inboundReceivingQuantity',0)
-        if  quantity_inbound is None:return None
-
-        last_updated = item.get('lastUpdatedTime')
-        snapshot_datetime = datetime.fromisoformat(last_updated.replace('Z',"+00:00"))
-
-        source = "amazon"
-
-        return InventoryRecord(
-             sku=sku,
-             quantity_on_hand=quantity_on_hand,
-            quantity_reserved=quantity_reserved,
-            quantity_inbound=quantity_inbound,
-            snapshot_datetime=snapshot_datetime,
-            source= source
-        )
-
+    def _normalize_inventory(
+        self,
+        granularityId:str,
+        granularityType:str,
+        item:dict[str,Any]
+         )->InventoryRecord|None:
 
               
+            sku = item.get('sellerSku')
+            if not sku :return None
+
+            quantity_data = item.get('inventoryDetails',) or {}
+            quantity_on_hand = quantity_data.get('fulfillableQuantity')
+            if quantity_on_hand is None:return None
+
+            reserved_data = (quantity_data.get('reservedQuantity') or {})
+            quantity_reserved = reserved_data.get('totalReservedQuantity',0)
+
+            quantity_inbound  = quantity_data.get('inboundReceivingQuantity',0)
+            if  quantity_inbound is None:return None
+
+            last_updated = item.get('lastUpdatedTime')
+            snapshot_datetime = datetime.fromisoformat(last_updated.replace('Z',"+00:00"))
+
+            source = "amazon"
+
+            return InventoryRecord(
+                 sku=sku,
+                 quantity_on_hand=quantity_on_hand,
+                quantity_reserved=quantity_reserved,
+                quantity_inbound=quantity_inbound,
+                snapshot_datetime=snapshot_datetime,
+                source= source
+            )
+    def _fetch_reports(
+        self,
+        reportTypes:list[str],
+        marketplaceIds:list[str],
+        processingStatuses:list[str]|None=None,
+        pageSize :int|None = None,
+        createdSince:str|None = None,
+        createdUntil:str|None = None,
+            ):
+
+                if not reportTypes:
+                    raise ValueError("report_types are required.")
+                if not marketplaceIds:
+                    raise ValueError("marketplace_ids are required.")
+
+                yield self.reports_api.iter_reports(
+                      reportTypes=reportTypes,
+                      marketplaceIds=marketplaceIds,
+                      processingStatuses=processingStatuses,
+                      pageSize=pageSize,
+                      createdSince=createdSince,
+                      createdUntil=createdUntil
+                      )
+                
+
 
          
 
-    def _fetch_reports(self):pass
+
+         
+
+
+
+
+
+
+
+
+
+
+         
 
          
 
