@@ -63,7 +63,7 @@ class InventoryRecord(BaseModel):
 
 
 # for Reports(will be use soo.n)
-class ReportJob(BaseModel):
+class AcceptedReports(BaseModel):
     report_id: str = Field(min_length=1)
     report_type: str = Field(min_length=1)
     processing_status: str = Field(min_length=1)

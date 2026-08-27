@@ -47,7 +47,7 @@ class AmazonReportsAPI:
                 body['dataEndTime'] = dataEndTime
             if reportOptions is not None:
                 body['reportOptions'] = reportOptions
-
+# Creates a report. and return reportid
             return self.client._post_(path=self.REPORT_PATH,body=body)
 
     def get_reports(
@@ -92,7 +92,7 @@ class AmazonReportsAPI:
                 if nextToken is not None:
                      params['nextToken'] = nextToken
 
-# amazon will return a report_id
+# Returns report details for the reports that match the filters that you specify.
                 return self.client._get_(path=self.REPORT_PATH,params=params)
 
     def iter_reports(
